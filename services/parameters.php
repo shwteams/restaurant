@@ -2,7 +2,7 @@
     define("HOST", "localhost");
     define("DBNAME", "restorant_db");
     define("PWD", "");
-    define("USER", "");
+    define("USER", "root");
     define("ALGO", "SHA256");
     define("URL_WS", "http://192.168.1.3:8080/global_booster/webresources/realalthissa/sendkeyaltissiaXml");//URL du webservice d'envoi de mail de la clé d'activation
 	define("URL_WS_ALERT_KEY", "http://41.66.37.238:85/global_booster/webresources/realalthissa/sendAlertkeyInfo");

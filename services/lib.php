@@ -10,6 +10,7 @@ CONTIENT TOUTES LES FONCTIONS DE MON APPLICATIONS
     include 'SMSManager.php';
     if (!isset($_SESSION)) {
 	  session_start();
+          $_SESSION['str_CUSTOMER_ID'] = "test";
 	}
     function DoConnexion($host, $SECURITY, $pass, $dbname) {
         $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8";
@@ -33,6 +34,15 @@ CONTIENT TOUTES LES FONCTIONS DE MON APPLICATIONS
         $message = http_build_query($data);
         $cle_bin = pack("a", KEY_PASSWORD);
         return strtoupper(hash_hmac(strtolower($data["ALGO"]), $message, $cle_bin));
+    }
+    function RandomString() {
+        $characters = "0123456789abcdefghijklmnopqrstxwz";
+        $randstring = '';
+        for ($i = 0; $i < 5; $i++) {
+            $randstring = $randstring . $characters[rand(0, strlen($characters))];
+        }
+        $unique = uniqid($randstring, "");
+        return $unique;
     }
     function sendMailInfo($from, $Mail_to, $subject, $htmlMail) {
         
@@ -71,8 +81,6 @@ CONTIENT TOUTES LES FONCTIONS DE MON APPLICATIONS
         $arrayJson["total"] = $intResult;
         $arrayJson["desc_statut"] = $db->errorInfo();
         $arrayJson["code_statut"] = $code_statut;
-
-        //fin code sql liste des criteres de recherche annuaire d'un customer
         echo "[" . json_encode($arrayJson) . "]";
     }
     function getAllNotification($lg_NOTIFICATION_ID, $lg_CUSTOMER_ID, $db) {
@@ -577,79 +585,227 @@ CONTIENT TOUTES LES FONCTIONS DE MON APPLICATIONS
         SAMPLE SEND MAIL HTML
     */
     function sendMailClosedReclamation($lg_TICKET_ID, $db){
-    $message = '<html>
-    <head>
-        <title>Fermeture de reclamation</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <table id="container" style="width: 100%;margin:auto;border-radius: 5px 5px 0px 0px;">
-            <tr>
-                <td>
-                    <table id="table-container" style="width: 100%;margin: auto;border-collapse: collapse;border: 1px solid #6b0218;font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, tahoma ;">
-                        <thead>
-                            <tr id="row-header" align="center">
-                                <th colspan="2" class="td-row-header" id="td-content-row-header" style="height: 40px;border-radius: 5px 5px 0px 0px; border: 1px solid #6b0218;color: #ffffff;font-weight: bold;font-size: 20px;background-color: #6b0218;font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto ;padding:10px;">str_TITLE_MAIL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr id="row-content-logo">
-                                <td class="td-row-content-logo" style="padding: 25px;">
-                                    <!--<img src="LOGO_ECAP" alt="Logo ecap" height="50" width="50" style="max-width: 100px; max-height: 90px;"/>-->
-                                </td>
-                                <td class="td-row-content-logo" align="right" style="padding: 25px;">
-                                    <!--<img src="LOGO_ECAP" alt="Logo ecap" height="50" width="50" style="max-width: 100px; max-height: 90px;"/>-->
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">
-                                    <img src="LOGO_ECAP" alt="Logo ecap" style="max-width: 100px; max-height: 90px;"/>
-                                </td>
-                            </tr>
-                            <tr id="row-content-body">
-                                <td colspan="2" class="td-row-content-body" style="padding: 10px;line-height: 35px;color: #444; font-size: 18px;">
-                                    Bonjour Mr/Mme/Mlle <span style="color: #6b0218">str_NAME</span>,<br />
-                                    La réclamation n°<b>int_NUMERO</b> vient d\'être cloturée.<br/>
-                                    Bien à vous,<br/>Votre équipe capital conseil et développement.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-            </tr>
+        $message = '<html>
+        <head>
+            <title>Fermeture de reclamation</title>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body>
+            <table id="container" style="width: 100%;margin:auto;border-radius: 5px 5px 0px 0px;">
+                <tr>
+                    <td>
+                        <table id="table-container" style="width: 100%;margin: auto;border-collapse: collapse;border: 1px solid #6b0218;font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, tahoma ;">
+                            <thead>
+                                <tr id="row-header" align="center">
+                                    <th colspan="2" class="td-row-header" id="td-content-row-header" style="height: 40px;border-radius: 5px 5px 0px 0px; border: 1px solid #6b0218;color: #ffffff;font-weight: bold;font-size: 20px;background-color: #6b0218;font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto ;padding:10px;">str_TITLE_MAIL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="row-content-logo">
+                                    <td class="td-row-content-logo" style="padding: 25px;">
+                                        <!--<img src="LOGO_ECAP" alt="Logo ecap" height="50" width="50" style="max-width: 100px; max-height: 90px;"/>-->
+                                    </td>
+                                    <td class="td-row-content-logo" align="right" style="padding: 25px;">
+                                        <!--<img src="LOGO_ECAP" alt="Logo ecap" height="50" width="50" style="max-width: 100px; max-height: 90px;"/>-->
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <img src="LOGO_ECAP" alt="Logo ecap" style="max-width: 100px; max-height: 90px;"/>
+                                    </td>
+                                </tr>
+                                <tr id="row-content-body">
+                                    <td colspan="2" class="td-row-content-body" style="padding: 10px;line-height: 35px;color: #444; font-size: 18px;">
+                                        Bonjour Mr/Mme/Mlle <span style="color: #6b0218">str_NAME</span>,<br />
+                                        La réclamation n°<b>int_NUMERO</b> vient d\'être cloturée.<br/>
+                                        Bien à vous,<br/>Votre équipe capital conseil et développement.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
 
-        </table>
+            </table>
 
-    </body>
-</html>';
-//    $message2 = $message;
-    $messagetemp = $message;
-    //echo $lg_TICKET_ID;
-    $tab_SECURITY = getArrayCustomerHasCreateTicket($lg_TICKET_ID, $db);
-   // var_dump($tab_SECURITY);
-    $message = str_replace('LOGO_ECAP', LOGO_ECAP, $message);
-    $message = str_replace('str_TITLE_MAIL', "Ouverture de réclamation", $message);
-    $message = str_replace('str_NAME', $tab_SECURITY['str_LAST_NAME'].' '.$tab_SECURITY['str_FIRST_NAME'], $message, $count);
-    $message = str_replace('int_NUMERO', $tab_SECURITY['int_NUMERO'], $message);
-    $int_NUMERO = $tab_SECURITY['int_NUMERO'];
-    $subject = "VOTRE RECLAMATION.";
-    $from = MAIL_FROM;
-    sendMailInfo($from, $tab_SECURITY['str_EMAIL'], $subject, $message);
-    $lg_CUSTOMER_ID = $db -> quote($tab_SECURITY['lg_CUSTOMER_ID']);
-    //recupéraion des contact du client
-    $req = "SELECT c.str_NAME, c.str_EMAIL FROM t_contact c "
-            . "WHERE c.str_STATUS = 'enable' AND c.lg_CUSTOMER_ID LIKE $lg_CUSTOMER_ID;";
-    $query = $db -> query($req);
-    while($data_query = $query -> fetch()){
-//        $message2 = $messagetemp;
-//        $message2 = str_replace('LOGO_ECAP', LOGO_ECAP, $message2);
-//        $message2 = str_replace('str_TITLE_MAIL', "Ouverture de réclamation", $message2);
-//        $message2 = str_replace('str_NAME', $data_query['str_NAME'], $message2, $count);
-//        //echo $data_query['str_NAME'];
-//        $message2 = str_replace('int_NUMERO', $int_NUMERO, $message2);
-        sendMailInfo($from, $data_query['str_EMAIL'], $subject, $message);
+        </body>
+    </html>';
+    //    $message2 = $message;
+        $messagetemp = $message;
+        //echo $lg_TICKET_ID;
+        $tab_SECURITY = getArrayCustomerHasCreateTicket($lg_TICKET_ID, $db);
+       // var_dump($tab_SECURITY);
+        $message = str_replace('LOGO_ECAP', LOGO_ECAP, $message);
+        $message = str_replace('str_TITLE_MAIL', "Ouverture de réclamation", $message);
+        $message = str_replace('str_NAME', $tab_SECURITY['str_LAST_NAME'].' '.$tab_SECURITY['str_FIRST_NAME'], $message, $count);
+        $message = str_replace('int_NUMERO', $tab_SECURITY['int_NUMERO'], $message);
+        $int_NUMERO = $tab_SECURITY['int_NUMERO'];
+        $subject = "VOTRE RECLAMATION.";
+        $from = MAIL_FROM;
+        sendMailInfo($from, $tab_SECURITY['str_EMAIL'], $subject, $message);
+        $lg_CUSTOMER_ID = $db -> quote($tab_SECURITY['lg_CUSTOMER_ID']);
+        //recupéraion des contact du client
+        $req = "SELECT c.str_NAME, c.str_EMAIL FROM t_contact c "
+                . "WHERE c.str_STATUS = 'enable' AND c.lg_CUSTOMER_ID LIKE $lg_CUSTOMER_ID;";
+        $query = $db -> query($req);
+        while($data_query = $query -> fetch()){
+    //        $message2 = $messagetemp;
+    //        $message2 = str_replace('LOGO_ECAP', LOGO_ECAP, $message2);
+    //        $message2 = str_replace('str_TITLE_MAIL', "Ouverture de réclamation", $message2);
+    //        $message2 = str_replace('str_NAME', $data_query['str_NAME'], $message2, $count);
+    //        //echo $data_query['str_NAME'];
+    //        $message2 = str_replace('int_NUMERO', $int_NUMERO, $message2);
+            sendMailInfo($from, $data_query['str_EMAIL'], $subject, $message);
+        }
+
     }
     
-}
+    function getAllTable( $lg_TABLE_ID, $db) {
+        $arrayJson = array();
+        $arraySql = array();
+        $code_statut = "0";
+        $str_STATUT = "%%";
+        $intResult = 0;
+        if ($lg_TABLE_ID == "" || $lg_TABLE_ID == null) {
+            $lg_TABLE_ID = "%%";
+        }
+        $lg_TABLE_ID = $db -> quote($lg_TABLE_ID);
+        
+        $sql = "SELECT * FROM t_table "
+                . " WHERE lg_TABLE_ID LIKE " . $lg_TABLE_ID . " "
+                . " ORDER BY dt_CREATED DESC;";
+        $stmt = $db -> query($sql);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($result as $item_result) {
+            $arraySql[] = $item_result;
+            $intResult++;
+            $code_statut = "1";
+        }
+        $arrayJson["results"] = $arraySql;
+        $arrayJson["total"] = $intResult;
+        $arrayJson["desc_statut"] = $db->errorInfo();
+        $arrayJson["code_statut"] = $code_statut;
+        echo "[" . json_encode($arrayJson) . "]";
+    }
+    function deleteTable($lg_TABLE_ID, $db) {
+        $arrayJson = array();
+        $message = "";
+        $code_statut = "";
+        $str_STATUT = "delete";
+        $lg_TABLE_ID = $db->quote($lg_TABLE_ID);
+        $sql = "UPDATE t_table "
+                . "SET str_STATUS = '$str_STATUT',"
+                . "str_UPDATED_BY = '', "
+                . "dt_UPDATED = '" . gmdate("y-m-d, H:i:s") . "' "
+                . "WHERE lg_TABLE_ID = $lg_TABLE_ID";
+        try {
+            $sucess = $db->exec($sql);
+            if ($sucess > 0) {
+                $message = "Suppression effectuée avec succès";
+                $code_statut = "1";
+            } else {
+                $message = "Erreur lors de la modification";
+                $code_statut = "0";
+            }
+        } catch (PDOException $e) {
+            die("Erreur ! : " . $e->getMessage());
+        }
+        $arrayJson["results"] = $message;
+        $arrayJson["total"] = $sucess;
+        $arrayJson["code_statut"] = $code_statut;
+        echo "[" . json_encode($arrayJson) . "]";
+    }
+    function editTable($lg_TABLE_ID, $str_WORDING, $int_NUMBER, $db) {
+        $arrayJson = array();
+        $message = "";
+        $code_statut = "";
+
+        $lg_TABLE_ID = $db->quote($lg_TABLE_ID);
+        $str_WORDING = $db->quote($str_WORDING);
+        $int_NUMBER = $db -> quote($int_NUMBER);
+        //$str_UPDATING_BY = $db -> quote($_SESSION['lg_SECURITY_ID']);
+        $sql = "UPDATE t_table "
+                . "SET str_WORDING = $str_WORDING,"
+                . "int_NUMBER_PLACE = $int_NUMBER, "
+                . "str_UPDATED_BY = $str_UPDATING_BY,"
+                . "dt_UPDATED = '" . gmdate("y-m-d, H:i:s") . "'"
+                . "WHERE lg_TABLE_ID = $lg_TABLE_ID";
+    //    echo $sql;
+        try {
+            $sucess = $db->exec($sql);
+            if ($sucess > 0) {
+                $message = "Modification effectuée avec succès";
+                $code_statut = "1";
+            } else {
+                $message = "Erreur lors de la modification";
+                $code_statut = "0";
+            }
+        } catch (PDOException $e) {
+            die("Erreur ! : " . $e->getMessage());
+        }
+
+        $arrayJson["results"] = $message;
+        $arrayJson["total"] = $sucess;
+        $arrayJson["code_statut"] = $code_statut;
+    //    $arrayJson["desc_statut"] = $db->errorInfo();
+        echo "[" . json_encode($arrayJson) . "]";
+    }
+    function isExistCodeTable($lg_TABLE_ID, $db) {
+        $str_STATUT = 'delete';
+        $lg_TABLE_ID = $db->quote($lg_TABLE_ID);
+        $sql = "SELECT * FROM t_table WHERE lg_TABLE_ID LIKE " . $lg_TABLE_ID . " AND str_STATUS <> '" . $str_STATUT . "'";
+        try {
+            $stmt = $db->query($sql);
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (count($result) > 0) {
+                return true;
+            }
+            return false;
+        } catch (PDOException $e) {
+            die("Erreur ! : " . $e->getMessage());
+            return false;
+        }
+    }
+    function addTable($lg_TABLE_ID, $str_WORDING, $int_NUMBER_PLACE, $db) {
+        $arrayJson = array();
+        $message = "";
+        $code_statut = "";
+        $str_STATUT = "enable";
+        $lg_TABLE_ID = RandomString();
+        $str_WORDING = $db -> quote($str_WORDING);
+//        $str_CREATED_BY = $db -> quote($_SESSION['lg_SECURITY_ID']);
+        $dt_CREATED = $db -> quote(gmdate("y-m-d, H:i:s"));
+       echo $sql = "INSERT INTO t_table(lg_TABLE_ID, str_WORDING, int_NUMBER_PLACE,str_STATUS, dt_CREATED, str_CREATED_BY, dt_UPDATED, str_UPDATED_BY)"
+                . "VALUES (:lg_TABLE_ID,:str_WORDING,:int_NUMBER_PLACE,:str_STATUS,$dt_CREATED,:str_CREATED_BY, $dt_CREATED, :str_UPDATED_BY)";
+        try {
+        
+            if (!isExistCodeTable($lg_TABLE_ID, $db)) {
+                $stmt = $db->prepare($sql);
+                $stmt->BindParam(':lg_TABLE_ID', $lg_TABLE_ID);
+                $stmt->BindParam(':str_WORDING', $str_WORDING);
+                $stmt->BindParam(':int_NUMBER_PLACE', $int_NUMBER_PLACE);
+                $stmt->BindParam(':str_STATUS', $str_STATUT);
+                $stmt->BindParam(':str_CREATED_BY', $_SESSION['str_CUSTOMER_ID']);
+                $stmt->BindParam(':str_UPDATED_BY', $_SESSION['str_CUSTOMER_ID']);
+                if ($stmt->execute()) {
+                    $message = "Insertion effectué avec succès";
+                    $code_statut = "1";
+                } else {
+                    $message = "Erreur lors de l'insertion";
+                    $code_statut = "0";
+                }
+            } else {
+                $message = "Ce Code  : \" " . $lg_TABLE_ID . " \" de table existe déja! \n";
+                $code_statut = "0";
+            }
+        } catch (PDOException $e) {
+            die("Erreur ! : " . $e->getMessage());
+        }
+        $arrayJson["results"] = $message;
+        $arrayJson["code_statut"] = $code_statut;
+        $arrayJson["desc_statut"] = $db->errorInfo();
+        echo "[" . json_encode($arrayJson) . "]";
+    }
+    
 ?>
